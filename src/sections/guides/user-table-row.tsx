@@ -1,5 +1,8 @@
 import { useState, useCallback } from 'react';
-
+// eslint-disable-next-line
+import { doc, deleteDoc } from 'firebase/firestore';
+// eslint-disable-next-line
+import Swal from 'sweetalert2';
 import Box from '@mui/material/Box';
 import Avatar from '@mui/material/Avatar';
 import Popover from '@mui/material/Popover';
@@ -9,9 +12,13 @@ import MenuList from '@mui/material/MenuList';
 import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import MenuItem, { menuItemClasses } from '@mui/material/MenuItem';
+import { Rating, Typography } from '@mui/material';
 
 import { Label } from 'src/components/label';
 import { Iconify } from 'src/components/iconify';
+import { db } from '../../../firebase'; // Firebase config
+
+
 
 // ----------------------------------------------------------------------
 
@@ -21,17 +28,23 @@ export type UserProps = {
   role: string;
   status: string;
   company: string;
-  avatarUrl: string;
+  avatar: string;
+  rating: any;
+  isOnline: boolean;
   isVerified: boolean;
+  phoneNumber: any;
+  email: any;
+  price: any;
 };
 
 type UserTableRowProps = {
   row: UserProps;
   selected: boolean;
   onSelectRow: () => void;
+  onDelete?: () => any;
 };
 
-export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) {
+export function UserTableRow({ row, selected, onSelectRow, onDelete = () => {} }: UserTableRowProps) {
   const [openPopover, setOpenPopover] = useState<HTMLButtonElement | null>(null);
 
   const handleOpenPopover = useCallback((event: React.MouseEvent<HTMLButtonElement>) => {
@@ -42,6 +55,21 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
     setOpenPopover(null);
   }, []);
 
+  const handleDelete = async () => {
+    try {
+      await deleteDoc(doc(db, 'guides', row.id)); 
+      Swal.fire({
+        title: 'Success!',
+        text: 'Guide deleted successfully!',
+        icon: 'success',
+        confirmButtonText: 'Cool!'
+      })
+      onDelete();
+    } catch (error) {
+      console.error('Error deleting guide:', error);
+    }
+  };
+
   return (
     <>
       <TableRow hover tabIndex={-1} role="checkbox" selected={selected}>
@@ -49,16 +77,32 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
           <Checkbox disableRipple checked={selected} onChange={onSelectRow} />
         </TableCell>
 
+
         <TableCell component="th" scope="row">
           <Box gap={2} display="flex" alignItems="center">
-            <Avatar alt={row.name} src={row.avatarUrl} />
+            <Avatar alt={row.name} src={row.avatar} />
             {row.name}
           </Box>
         </TableCell>
 
-        <TableCell>{row.company}</TableCell>
+        <TableCell>{row.phoneNumber}</TableCell>
+        <TableCell>{row.email}</TableCell>
+        <TableCell align="left">
+          <Typography
+            variant="body2"
+            fontWeight={700}
+            color={row.price > 100 ? 'error.main' : 'success.main'}
+          >
+            {new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+            }).format(row.price)}
+          </Typography>
+        </TableCell>
 
-        <TableCell>{row.role}</TableCell>
+        <TableCell align="center">
+          <Rating value={row.rating || 0} precision={0.5} readOnly />
+        </TableCell>
 
         <TableCell align="center">
           {row.isVerified ? (
@@ -69,7 +113,9 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
         </TableCell>
 
         <TableCell>
-          <Label color={(row.status === 'banned' && 'error') || 'success'}>{row.status}</Label>
+          <Label color={(!row.isOnline && 'error') || 'success'}>
+            {row.isOnline ? 'online' : 'offline'}
+          </Label>
         </TableCell>
 
         <TableCell align="right">
@@ -102,12 +148,13 @@ export function UserTableRow({ row, selected, onSelectRow }: UserTableRowProps) 
             },
           }}
         >
-          <MenuItem onClick={handleClosePopover}>
-            <Iconify icon="solar:pen-bold" />
-            Edit
-          </MenuItem>
-
-          <MenuItem onClick={handleClosePopover} sx={{ color: 'error.main' }}>
+          <MenuItem
+            onClick={() => {
+              handleClosePopover();
+              handleDelete();
+            }}
+            sx={{ color: 'error.main' }}
+          >
             <Iconify icon="solar:trash-bin-trash-bold" />
             Delete
           </MenuItem>

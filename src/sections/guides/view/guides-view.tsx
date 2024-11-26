@@ -1,4 +1,8 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+// eslint-disable-next-line
+import { collection, getDocs } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -23,16 +27,42 @@ import { UserTableToolbar } from '../user-table-toolbar';
 import { emptyRows, applyFilter, getComparator } from '../utils';
 
 import type { UserProps } from '../user-table-row';
+import { db } from '../../../../firebase';
 
 // ----------------------------------------------------------------------
 
-export function UserView() {
+export function GuidesView() {
   const table = useTable();
+  const navigate = useNavigate()
 
   const [filterName, setFilterName] = useState('');
+  const [guides, setGuides] = useState<any>([]);
+  const [loading, setLoading] = useState(true);
+
+  console.log(guides)
+  const fetchGuides = async () => {
+    setLoading(true);
+    try {
+      const querySnapshot = await getDocs(collection(db, 'guides'));
+      const guidesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setGuides(guidesData);
+    } catch (error) {
+      console.error('Error fetching guides:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGuides();
+  }, []);
+
 
   const dataFiltered: UserProps[] = applyFilter({
-    inputData: _users,
+    inputData: guides,
     comparator: getComparator(table.order, table.orderBy),
     filterName,
   });
@@ -43,14 +73,15 @@ export function UserView() {
     <DashboardContent>
       <Box display="flex" alignItems="center" mb={5}>
         <Typography variant="h4" flexGrow={1}>
-          Users
+          Guides
         </Typography>
         <Button
           variant="contained"
           color="inherit"
+          onClick={() => navigate('add')}
           startIcon={<Iconify icon="mingcute:add-line" />}
         >
-          New user
+          New Guide
         </Button>
       </Box>
 
@@ -70,21 +101,23 @@ export function UserView() {
               <UserTableHead
                 order={table.order}
                 orderBy={table.orderBy}
-                rowCount={_users.length}
+                rowCount={guides.length}
                 numSelected={table.selected.length}
                 onSort={table.onSort}
                 onSelectAllRows={(checked) =>
                   table.onSelectAllRows(
                     checked,
-                    _users.map((user) => user.id)
+                    guides.map((guide: any) => guide.id)
                   )
                 }
                 headLabel={[
                   { id: 'name', label: 'Name' },
-                  { id: 'company', label: 'Company' },
-                  { id: 'role', label: 'Role' },
+                  { id: 'phoneNumber', label: 'Phone Number' },
+                  { id: 'email', label: 'Email' },
+                  { id: 'price', label: 'Price' },
+                  { id: 'rating', label: 'Rating', align: 'center' },
                   { id: 'isVerified', label: 'Verified', align: 'center' },
-                  { id: 'status', label: 'Status' },
+                  { id: 'isOnline', label: 'Status' },
                   { id: '' },
                 ]}
               />
@@ -100,6 +133,7 @@ export function UserView() {
                       row={row}
                       selected={table.selected.includes(row.id)}
                       onSelectRow={() => table.onSelectRow(row.id)}
+                      onDelete={fetchGuides}
                     />
                   ))}
 
@@ -117,7 +151,7 @@ export function UserView() {
         <TablePagination
           component="div"
           page={table.page}
-          count={_users.length}
+          count={guides.length}
           rowsPerPage={table.rowsPerPage}
           onPageChange={table.onChangePage}
           rowsPerPageOptions={[5, 10, 25]}

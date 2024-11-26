@@ -10,16 +10,19 @@ import { ThemeProvider } from 'src/theme/theme-provider';
 
 import { Iconify } from 'src/components/iconify';
 
+// eslint-disable-next-line
+import Swal from 'sweetalert2'
+
 // ----------------------------------------------------------------------
 
 export default function App() {
   useScrollToTop();
 
-  const githubButton = (
+  const applicationButton = (
     <Fab
       size="medium"
-      aria-label="Github"
-      href="https://github.com/minimal-ui-kit/material-kit-react"
+      aria-label="Uzventure"
+      href="#"
       sx={{
         zIndex: 9,
         right: 20,
@@ -31,14 +34,15 @@ export default function App() {
         color: 'common.white',
       }}
     >
-      <Iconify width={24} icon="eva:github-fill" />
+      {/* <Iconify width={24} icon="eva:github-fill" /> */}
+      UZ
     </Fab>
   );
 
   return (
     <ThemeProvider>
       <Router />
-      {githubButton}
+      {applicationButton}
     </ThemeProvider>
   );
 }

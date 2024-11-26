@@ -42,9 +42,6 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
 
   return (
     <LayoutSection
-      /** **************************************
-       * Header
-       *************************************** */
       headerSection={
         <HeaderSection
           layoutQuery={layoutQuery}
@@ -80,9 +77,9 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
             ),
             rightArea: (
               <Box gap={1} display="flex" alignItems="center">
-                <Searchbar />
-                <LanguagePopover data={_langs} />
-                <NotificationsPopover data={_notifications} />
+                {/* <Searchbar /> */}
+                {/* <LanguagePopover data={_langs} /> */}
+                {/* <NotificationsPopover data={_notifications} /> */}
                 <AccountPopover
                   data={[
                     {
@@ -90,16 +87,16 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
                       href: '/',
                       icon: <Iconify width={22} icon="solar:home-angle-bold-duotone" />,
                     },
-                    {
-                      label: 'Profile',
-                      href: '#',
-                      icon: <Iconify width={22} icon="solar:shield-keyhole-bold-duotone" />,
-                    },
-                    {
-                      label: 'Settings',
-                      href: '#',
-                      icon: <Iconify width={22} icon="solar:settings-bold-duotone" />,
-                    },
+                    // {
+                    //   label: 'Profile',
+                    //   href: '#',
+                    //   icon: <Iconify width={22} icon="solar:shield-keyhole-bold-duotone" />,
+                    // },
+                    // {
+                    //   label: 'Settings',
+                    //   href: '#',
+                    //   icon: <Iconify width={22} icon="solar:settings-bold-duotone" />,
+                    // },
                   ]}
                 />
               </Box>
@@ -107,19 +104,10 @@ export function DashboardLayout({ sx, children, header }: DashboardLayoutProps) 
           }}
         />
       }
-      /** **************************************
-       * Sidebar
-       *************************************** */
       sidebarSection={
         <NavDesktop data={navData} layoutQuery={layoutQuery} workspaces={_workspaces} />
       }
-      /** **************************************
-       * Footer
-       *************************************** */
       footerSection={null}
-      /** **************************************
-       * Style
-       *************************************** */
       cssVars={{
         '--layout-nav-vertical-width': '300px',
         '--layout-dashboard-content-pt': theme.spacing(1),
